@@ -1,39 +1,11 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist/wedding-model-02/browser",
-  "framework": null,
-  "redirects": [
-    {
-      "source": "/",
-      "has": [
-        {
-          "type": "host",
-          "value": "wedding-invitations-m02.festanovaco.com"
-        }
-      ],
-      "destination": "https://festanovaco.com/invitations-wedding-model-02/",
-      "permanent": true
-    },
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "wedding-invitations-m02.festanovaco.com"
-        }
-      ],
-      "destination": "https://festanovaco.com/invitations-wedding-model-02/:path*",
-      "permanent": true
-    }
-  ],
   "rewrites": [
     {
-      "source": "/invitations-wedding-model-02/:file(.*\\..*)",
-      "destination": "/:file"
+      "source": "/invitations-wedding-model-02/(.*\\..*)",
+      "destination": "/$1"
     },
     {
-      "source": "/invitations-wedding-model-02/:path*",
+      "source": "/invitations-wedding-model-02/(.*)",
       "destination": "/index.html"
     },
     {
