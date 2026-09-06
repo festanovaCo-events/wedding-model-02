@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/invitations-wedding/(.*\\..*)",
+      "destination": "/$1"
+    },
+    {
+      "source": "/invitations-wedding/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
