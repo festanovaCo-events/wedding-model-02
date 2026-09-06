@@ -6,8 +6,25 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/invitations-wedding-model-02/",
-      "permanent": false
+      "has": [
+        {
+          "type": "host",
+          "value": "wedding-invitations-m02.festanovaco.com"
+        }
+      ],
+      "destination": "https://festanovaco.com/invitations-wedding-model-02/",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "wedding-invitations-m02.festanovaco.com"
+        }
+      ],
+      "destination": "https://festanovaco.com/invitations-wedding-model-02/:path*",
+      "permanent": true
     }
   ],
   "rewrites": [
