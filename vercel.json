@@ -6,17 +6,17 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/invitations-wedding/",
+      "destination": "/invitations-wedding-model-02/",
       "permanent": false
     }
   ],
   "rewrites": [
     {
-      "source": "/invitations-wedding/:file(.*\\..*)",
+      "source": "/invitations-wedding-model-02/:file(.*\\..*)",
       "destination": "/:file"
     },
     {
-      "source": "/invitations-wedding/:path*",
+      "source": "/invitations-wedding-model-02/:path*",
       "destination": "/index.html"
     },
     {
