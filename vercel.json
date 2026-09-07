@@ -1,6 +1,7 @@
 {
   "framework": null,
-  "buildCommand": "NODE_OPTIONS=--max-old-space-size=6144 npm run build",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/wedding-model-02/browser",
   "rewrites": [
     {
       "source": "/invitations-wedding-model-02/(.*\\..*)",
