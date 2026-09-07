@@ -1,9 +1,8 @@
 {
-  "build": {
-    "env": {
-      "NODE_OPTIONS": "--max-old-space-size=4096"
-    }
-  },
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "NODE_OPTIONS=--max-old-space-size=6144 npm run build",
+  "outputDirectory": "dist/wedding-model-02/browser",
   "rewrites": [
     {
       "source": "/invitations-wedding-model-02/(.*\\..*)",
