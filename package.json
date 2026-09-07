@@ -10,12 +10,19 @@
     "prestart": "node scripts/select-theme.js && node scripts/generate-fonts-inline.js",
     "pretest": "node scripts/select-theme.js",
     "predeploy": "npx http-server dist/wedding-model-02/browser -o -p 8080",
-    "build": "NODE_OPTIONS=--max-old-space-size=4096 NG_BUILD_MAX_WORKERS=1 ng build --configuration production",
+    "build": "NG_BUILD_MAX_WORKERS=1 ng build --configuration production",
     "optimize-video": "bash scripts/optimize-video.sh",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
   "private": true,
+  "allowScripts": {
+    "esbuild": true,
+    "@scarf/scarf": true,
+    "lmdb": true,
+    "msgpackr-extract": true,
+    "nice-napi": true
+  },
   "overrides": {
     "@angular-devkit/build-angular": {
       "tailwindcss": "^4.0.0"

@@ -1,6 +1,7 @@
 {
   "framework": null,
-  "buildCommand": "npm run build",
+  "installCommand": "npm install && node node_modules/esbuild/install.js",
+  "buildCommand": "NG_BUILD_MAX_WORKERS=1 npm run build",
   "outputDirectory": "dist/wedding-model-02/browser",
   "rewrites": [
     {
