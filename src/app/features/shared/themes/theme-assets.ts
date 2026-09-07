@@ -33,16 +33,26 @@ export const BASE_THEME_ASSETS: ThemeAssets = {
   instagramBackground: 'assets/images/banner-instagram/banner.jpeg',
   music: 'assets/music/EdSheeran-Perfect(Lyrics).mp3',
   decorations: {
-    bannerHomeWaves: 'assets/generated/active/images/banner-home/img_ondas01.svg',
-    bannerInstagramTopWaves: 'assets/generated/active/images/banner-instagram/img_ondas05.svg',
-    bannerInstagramBottomWaves: 'assets/generated/active/images/banner-instagram/img_ondas06.svg',
-    eventCardBeltLeft: 'assets/generated/active/images/event-scheduler/img_cinta01.svg',
-    eventCardBeltRight: 'assets/generated/active/images/event-scheduler/img_cinta02.svg',
-    countdownCircle: 'assets/generated/active/images/event-scheduler/img_circuloContador01.svg',
-    eventScheduleWaves: 'assets/generated/active/images/event-scheduler/img_ondas02.svg',
-    eventScheduleLines: 'assets/generated/active/images/event-scheduler/img_lineas01.svg',
-    instructionsWavesTop: 'assets/generated/active/images/instructions/img_ondas03.svg',
-    instructionsWavesBottom: 'assets/generated/active/images/instructions/img_ondas04.svg',
+    bannerHomeWaves:
+      'assets/generated/active/images/banner-home/img_ondas01.svg',
+    bannerInstagramTopWaves:
+      'assets/generated/active/images/banner-instagram/img_ondas05.svg',
+    bannerInstagramBottomWaves:
+      'assets/generated/active/images/banner-instagram/img_ondas06.svg',
+    eventCardBeltLeft:
+      'assets/generated/active/images/event-scheduler/img_cinta01.svg',
+    eventCardBeltRight:
+      'assets/generated/active/images/event-scheduler/img_cinta02.svg',
+    countdownCircle:
+      'assets/generated/active/images/event-scheduler/img_circuloContador01.svg',
+    eventScheduleWaves:
+      'assets/generated/active/images/event-scheduler/img_ondas02.svg',
+    eventScheduleLines:
+      'assets/generated/active/images/event-scheduler/img_lineas01.svg',
+    instructionsWavesTop:
+      'assets/generated/active/images/instructions/img_ondas03.svg',
+    instructionsWavesBottom:
+      'assets/generated/active/images/instructions/img_ondas04.svg',
   },
   instructionIcons: {
     dressCode: 'assets/generated/active/images/instructions/vestuario.svg',
