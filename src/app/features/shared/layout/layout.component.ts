@@ -1,10 +1,12 @@
 import {
   Component,
+  DestroyRef,
   ElementRef,
   OnInit,
-  Renderer2,
   ViewChild,
+  inject,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   Router,
   NavigationStart,
@@ -18,7 +20,13 @@ import { LoaderHeartComponent } from '../components/common/loader-heart/loader-h
 import { SplashMusicComponent } from '../components/ui/lottie/splash-music/splash-music.component';
 import { FooterComponent } from '../components/common/footer/footer.component';
 import { WEDDING_INFO } from '../constants/wedding-info';
+import { BackgroundMusicService } from '../services/background-music.service';
 import { ModalFlowService } from '../services/modal-flow.service';
+import { ScrollLockService } from '../services/scroll-lock.service';
+
+const MIN_LOADER_MS = 2000;
+const MAX_LOADER_MS = 5000;
+const SPLASH_PAUSE_DELAY_MS = 300;
 
 @Component({
   standalone: true,
@@ -39,42 +47,42 @@ export class LayoutComponent implements OnInit {
   isLoading = true;
   modalDismissed = false;
   showContent = false;
-  bounce = false;
   weddingInfo = WEDDING_INFO;
 
-  private audio: HTMLAudioElement | null = null;
-  private isMusicPlaying = false;
-  private minTime = 2000;
+  private readonly destroyRef = inject(DestroyRef);
   private startTime = 0;
+  private readonly timers: number[] = [];
 
   constructor(
     private router: Router,
-    private renderer: Renderer2,
     private modalFlowService: ModalFlowService,
+    private backgroundMusic: BackgroundMusicService,
+    private scrollLock: ScrollLockService,
   ) {}
 
   ngOnInit(): void {
     this.startTime = Date.now();
 
-    const maxLoadTime = 5000;
-    setTimeout(() => {
-      if (this.isLoading) {
-        this.isLoading = false;
-        this.showContent = true;
-        this.enableScroll();
+    this.later(MAX_LOADER_MS, () => {
+      if (!this.isLoading) {
+        return;
       }
-    }, maxLoadTime);
-
-    setTimeout(() => {
       this.isLoading = false;
       this.showContent = true;
-      this.disableScroll();
-    }, this.minTime);
+      this.scrollLock.unlock();
+    });
 
-    this.router.events.subscribe((event) => {
+    this.later(MIN_LOADER_MS, () => {
+      this.isLoading = false;
+      this.showContent = true;
+      this.scrollLock.lock();
+    });
+
+    this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
       if (event instanceof NavigationStart) {
         this.startTime = Date.now();
         this.isLoading = true;
+        return;
       }
 
       if (
@@ -82,80 +90,70 @@ export class LayoutComponent implements OnInit {
         event instanceof NavigationCancel ||
         event instanceof NavigationError
       ) {
-        const elapsed = Date.now() - this.startTime;
-        const remaining = this.minTime - elapsed;
-
-        if (remaining > 0) {
-          setTimeout(() => {
-            this.isLoading = false;
-          }, remaining);
-        } else {
-          this.isLoading = false;
-        }
+        this.finishNavigationLoader();
       }
+    });
+
+    this.destroyRef.onDestroy(() => {
+      this.timers.forEach((timerId) => window.clearTimeout(timerId));
     });
   }
 
-  onAccept(withMusic: boolean) {
+  onAccept(withMusic: boolean): void {
     this.modalDismissed = true;
-    this.enableScroll();
+    this.scrollLock.unlock();
     this.modalFlowService.emitWelcomeModalAccepted();
 
     if (withMusic) {
-      this.playBackgroundMusic();
-    } else {
-      setTimeout(() => {
-        if (this.splashComp) {
-          this.splashComp.pauseAnimation();
-        }
-      }, 300);
-    }
-  }
-
-  disableScroll() {
-    this.renderer.setStyle(document.body, 'overflow', 'hidden');
-  }
-
-  enableScroll() {
-    this.renderer.removeStyle(document.body, 'overflow');
-  }
-
-  playBackgroundMusic() {
-    if (!this.audio) {
-      this.audio = new Audio(this.weddingInfo.music.url);
-      this.audio.loop = this.weddingInfo.music.loop;
-      this.audio.volume = this.weddingInfo.music.volume;
+      this.backgroundMusic.play();
+      return;
     }
 
-    this.audio.play();
-    this.isMusicPlaying = true;
+    this.later(SPLASH_PAUSE_DELAY_MS, () => {
+      this.splashComp?.pauseAnimation();
+    });
   }
 
-  toggleMusic() {
-    if (!this.audio) return;
-
-    if (this.isMusicPlaying) {
-      this.audio.pause();
-      if (this.splashComp) {
-        this.splashComp.pauseAnimation();
-      }
-    } else {
-      this.audio.play();
-      if (this.splashComp) {
-        this.splashComp.playAnimation();
-      }
+  toggleMusic(): void {
+    const playing = this.backgroundMusic.toggle();
+    if (!this.splashComp) {
+      return;
     }
 
-    this.isMusicPlaying = !this.isMusicPlaying;
+    if (playing) {
+      this.splashComp.playAnimation();
+      return;
+    }
+
+    this.splashComp.pauseAnimation();
   }
 
-  triggerBounce() {
-    const el = this.modalContent?.nativeElement;
-    if (!el) return;
+  triggerBounce(): void {
+    const el = this.modalContent?.nativeElement as HTMLElement | undefined;
+    if (!el) {
+      return;
+    }
 
-    this.renderer.removeClass(el, 'app-pulse');
-    this.renderer.removeClass(el, 'app-slide-in-down');
+    el.classList.remove('app-pulse', 'app-slide-in-down');
     void el.offsetWidth;
-    this.renderer.addClass(el, 'app-pulse');
+    el.classList.add('app-pulse');
+  }
+
+  private finishNavigationLoader(): void {
+    const elapsed = Date.now() - this.startTime;
+    const remaining = MIN_LOADER_MS - elapsed;
+
+    if (remaining > 0) {
+      this.later(remaining, () => {
+        this.isLoading = false;
+      });
+      return;
+    }
+
+    this.isLoading = false;
+  }
+
+  private later(delayMs: number, action: () => void): void {
+    this.timers.push(window.setTimeout(action, delayMs));
   }
 }

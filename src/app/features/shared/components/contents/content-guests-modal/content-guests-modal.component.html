@@ -21,8 +21,8 @@
 
     <form class="mb-4 flex flex-col gap-4 items-center justify-center" (ngSubmit)="confirmSend()">
         <!-- Input solo si no se alcanzaron los cupos -->
-        <div class="w-full flex flex-col gap-1" *ngIf="listName.length < maximumQuotas">
-            <input type="text" [(ngModel)]="nameCurrent" placeholder="Nombre del acompañante"
+        <div class="w-full flex flex-col gap-1" *ngIf="canAddMoreGuests">
+            <input type="text" [(ngModel)]="draftName" placeholder="Nombre del acompañante"
                 class="border border-gray-300 rounded p-2 w-full mb-2 outline-none text-theme-text" name="nombre" />
             <button type="button" (click)="saveName()"
                 class="bg-white text-theme-text px-4 py-2 rounded-[50px] outline-none transition-all hover:bg-primary hover:text-white w-full font-bold cursor-pointer">
@@ -32,12 +32,17 @@
 
         <!-- Lista de nombres -->
         <div class="w-full">
-            <p class="text-sm text-gray-600 mt-4">Lista de acompañantes ({{ listName.length }}/{{ maximumQuotas }}):</p>
-            <p class="text-sm text-gray-600">Máximo {{ maximumQuotas }} acompañantes.</p>
+            <p class="text-sm text-gray-600 mt-4">Lista de acompañantes ({{ names.length }}/{{ maximumSeats }}):</p>
+            <p class="text-sm text-gray-600">Máximo {{ maximumSeats }} acompañantes.</p>
             <ul class="mt-4 space-y-2 text-gray-700">
-                <li *ngFor="let nombre of listName; let i = index" class="flex justify-between items-center">
-                    <p class="text-[28px] font-cookie text-theme-text font-medium capitalize">{{ nombre }}</p>
-                    <button type="button" (click)="deleteName(i)"
+                <li *ngFor="let nombre of names; let i = index" class="flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <p class="text-[28px] font-cookie text-theme-text font-medium capitalize">{{ nombre }}</p>
+                        <span *ngIf="nombre === hostName" class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                            Asignado
+                        </span>
+                    </div>
+                    <button *ngIf="nombre !== hostName" type="button" (click)="deleteName(i)"
                         class="text-primary-soft text-sm hover:underline cursor-pointer">
                         Eliminar
                     </button>
@@ -45,7 +50,7 @@
             </ul>
 
             <!-- Botón enviar cuando hay al menos uno guardado -->
-            <div *ngIf="listName.length > 0" class="mt-4">
+            <div *ngIf="names.length > 0" class="mt-4">
                 <button type="submit"
                     class="bg-primary text-white px-4 py-2 hover:bg-primary-soft cursor-pointer w-full font-bold rounded-[50px] outline-none transition-all">
                     Enviar

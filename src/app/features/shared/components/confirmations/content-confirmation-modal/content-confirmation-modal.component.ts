@@ -1,12 +1,23 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastrService } from 'ngx-toastr';
-import { InvitationStateService } from '../../../services/invitation-state.service';
-import { InvitationService } from '../../../services/invitation.service';
+import { filter } from 'rxjs/operators';
+import { INVITATION_MESSAGES } from '../../../constants/invitation-messages';
+import { GuestList } from '../../../domain/guest-list';
 import { InvitationInfoResponse } from '../../../interfaces/invitation.interface';
+import { InvitationStateService } from '../../../services/invitation-state.service';
 import { ConfirmAlertComponent } from '../../common/confirm-alert/confirm-alert.component';
+
+type ConfirmationStep =
+  | 'confirmation'
+  | 'loading'
+  | 'guests'
+  | 'decline-confirmation'
+  | 'partial-quotas-confirmation';
+
+const GUEST_STEP_DELAY_MS = 1500;
 
 @Component({
   selector: 'app-content-confirmation-modal',
@@ -15,171 +26,117 @@ import { ConfirmAlertComponent } from '../../common/confirm-alert/confirm-alert.
   templateUrl: './content-confirmation-modal.component.html',
   styleUrl: './content-confirmation-modal.component.css',
 })
-export class ContentConfirmationModalComponent implements OnInit, OnDestroy {
+export class ContentConfirmationModalComponent implements OnInit {
   @Output() closeModal = new EventEmitter<void>();
-  
-  currentStep:
-    | 'confirmation'
-    | 'loading'
-    | 'guests'
-    | 'decline-confirmation'
-    | 'partial-quotas-confirmation' = 'confirmation';
-  isConfirmed: boolean | null = null;
-  
-  nameCurrent: string = '';
-  listName: string[] = [];
-  maximumQuotas: number = 7;
-  registrationSent: boolean = false;
-  hostName: string = '';
-  private subscription?: Subscription;
-  
-  private token: string = '';
 
-  get additionalGuests(): string[] {
-    return this.listName.filter(name => name !== this.hostName);
-  }
+  currentStep: ConfirmationStep = 'confirmation';
+  willAttend: boolean | null = null;
+  draftName = '';
+  guestList = GuestList.empty();
 
-  get canAddMoreGuests(): boolean {
-    return this.additionalGuests.length < (this.maximumQuotas - 1);
-  }
+  private readonly destroyRef = inject(DestroyRef);
+  private guestListReady = false;
+  private guestStepTimer?: number;
 
   constructor(
     private invitationStateService: InvitationStateService,
-    private invitationService: InvitationService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
   ) {}
 
   ngOnInit(): void {
-    this.subscription = this.invitationStateService.getInvitationData$().subscribe(data => {
-      if (data) {
-        this.token = data.data.invitation.token || '';
-        
-        this.hostName = data.data.invitation.name || '';
-        this.maximumQuotas = data.data.available_seats || 7;
-        
-        if (this.hostName) {
-          this.listName = [this.hostName];
+    this.invitationStateService.invitationData$
+      .pipe(
+        filter((data): data is InvitationInfoResponse => data !== null),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((data) => {
+        if (this.guestListReady) {
+          return;
         }
-        
-        if (data.data.invitation.guests && data.data.invitation.guests.length > 0) {
-          const guestNames = data.data.invitation.guests.map(guest => guest.name);
-          guestNames.forEach(guestName => {
-            if (guestName !== this.hostName && !this.listName.includes(guestName)) {
-              this.listName.push(guestName);
-            }
-          });
-        }
-      }
-    });
+        this.guestList = GuestList.fromInvitation(data);
+        this.guestListReady = true;
+      });
+
+    this.destroyRef.onDestroy(() => this.clearGuestStepTimer());
   }
 
-  ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
+  get hostName(): string {
+    return this.guestList.hostName;
   }
 
-  /**
-   * Recargar la información de la invitación después de aceptar o rechazar
-   */
-  private reloadInvitationData(): void {
-    if (!this.token) {
-      console.warn('No hay token disponible para recargar la información');
+  get names(): readonly string[] {
+    return this.guestList.names;
+  }
+
+  get maximumSeats(): number {
+    return this.guestList.maximumSeats;
+  }
+
+  get canAddMoreGuests(): boolean {
+    return this.guestList.canAddMore;
+  }
+
+  get partialQuotasMessage(): string {
+    return this.guestList.partialMessage;
+  }
+
+  onConfirmChange(): void {
+    if (this.willAttend === true) {
+      this.currentStep = 'loading';
+      this.guestStepTimer = window.setTimeout(() => {
+        this.currentStep = 'guests';
+      }, GUEST_STEP_DELAY_MS);
       return;
     }
 
-    this.invitationStateService.setLoading(true);
-    this.invitationService.getInvitationInfo(this.token).subscribe({
-      next: (response) => {
-        this.invitationStateService.setInvitationData(response);
-        this.invitationStateService.setLoading(false);
-      },
-      error: (error) => {
-        console.error('Error al recargar datos de invitación:', error);
-        this.invitationStateService.setLoading(false);
-      }
-    });
-  }
-
-  onConfirmChange() {
-    if (this.isConfirmed === true) {
-      this.currentStep = 'loading';
-      
-      setTimeout(() => {
-        this.currentStep = 'guests';
-      }, 1500);
-    } else if (this.isConfirmed === false) {
+    if (this.willAttend === false) {
       this.currentStep = 'decline-confirmation';
     }
   }
 
-  confirmDecline() {
-    if (!this.token) {
-      this.toastr.error('Error: No se encontró la información de la invitación', '', {
-        timeOut: 5000,
-        positionClass: 'toast-top-right',
-        closeButton: true,
-        progressBar: true,
-      });
+  confirmDecline(): void {
+    if (!this.invitationStateService.getToken()) {
+      this.toastr.error(INVITATION_MESSAGES.missingToken);
       return;
     }
 
     this.currentStep = 'loading';
-
-    this.invitationService.declineInvitation(this.token).subscribe({
-      next: (response) => {
-        this.reloadInvitationData();
-        
-        this.reset();
-        this.closeModal.emit();
-        
-        setTimeout(() => {
-          this.toastr.info('Lamentamos que no puedas asistir. ¡Esperamos verte en otra ocasión!', '', {
-            timeOut: 5000,
-            positionClass: 'toast-top-right',
-            closeButton: true,
-            progressBar: true,
-          });
-        }, 300);
-      },
-      error: (error) => {
-        console.error('Error al rechazar la invitación:', error);
-        this.currentStep = 'decline-confirmation';
-        this.toastr.error('Error al rechazar la invitación. Por favor, intenta nuevamente.', '', {
-          timeOut: 5000,
-          positionClass: 'toast-top-right',
-          closeButton: true,
-          progressBar: true,
-        });
-      }
-    });
+    this.invitationStateService
+      .decline()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.reset();
+          this.closeModal.emit();
+          this.toastr.info(INVITATION_MESSAGES.declined);
+        },
+        error: () => {
+          this.currentStep = 'decline-confirmation';
+          this.toastr.error(INVITATION_MESSAGES.declineError);
+        },
+      });
   }
 
-  cancelDecline() {
-    this.isConfirmed = null;
+  cancelDecline(): void {
+    this.willAttend = null;
     this.currentStep = 'confirmation';
   }
 
-  saveName() {
-    const nombreTrim = this.nameCurrent.trim();
-    if (
-      nombreTrim &&
-      this.canAddMoreGuests &&
-      !this.listName.includes(nombreTrim) &&
-      nombreTrim !== this.hostName
-    ) {
-      this.listName.push(nombreTrim);
-      this.nameCurrent = '';
+  saveName(): void {
+    const nextList = this.guestList.add(this.draftName);
+    if (nextList === this.guestList) {
+      return;
     }
+    this.guestList = nextList;
+    this.draftName = '';
   }
 
-  deleteName(index: number) {
-    const nombre = this.listName[index];
-    if (nombre !== this.hostName) {
-      this.listName.splice(index, 1);
-    }
+  deleteName(index: number): void {
+    this.guestList = this.guestList.removeAt(index);
   }
 
-  confirmSend() {
-    if (this.listName.length < this.maximumQuotas) {
+  confirmSend(): void {
+    if (this.guestList.isPartial) {
       this.currentStep = 'partial-quotas-confirmation';
       return;
     }
@@ -187,73 +144,54 @@ export class ContentConfirmationModalComponent implements OnInit, OnDestroy {
     this.send();
   }
 
-  confirmPartialSend() {
+  confirmPartialSend(): void {
     this.send();
   }
 
-  cancelPartialSend() {
+  cancelPartialSend(): void {
     this.currentStep = 'guests';
   }
 
-  get partialQuotasMessage(): string {
-    return `Solo estás registrando ${this.listName.length} de ${this.maximumQuotas} cupos.`;
-  }
-
-  send() {
-    if (!this.token) {
-      this.toastr.error('Error: No se encontró la información de la invitación', '', {
-        timeOut: 5000,
-        positionClass: 'toast-top-right',
-        closeButton: true,
-        progressBar: true,
-      });
+  send(): void {
+    if (!this.invitationStateService.getToken()) {
+      this.toastr.error(INVITATION_MESSAGES.missingToken);
       return;
     }
 
     this.currentStep = 'loading';
-    this.registrationSent = true;
-
-    const guestNames = [...this.listName];
-
-    this.invitationService.acceptInvitation(this.token, guestNames).subscribe({
-      next: (response) => {
-        this.reloadInvitationData();
-        
-        this.reset();
-        this.closeModal.emit();
-        
-        setTimeout(() => {
-          this.toastr.success('¡Felicidades! Has sido agendado', '', {
-            timeOut: 5000,
-            positionClass: 'toast-top-right',
-            closeButton: true,
-            progressBar: true,
-          });
-        }, 300);
-      },
-      error: (error) => {
-        console.error('Error al aceptar la invitación:', error);
-        this.currentStep = 'guests';
-        this.registrationSent = false;
-        this.toastr.error('Error al enviar la confirmación. Por favor, intenta nuevamente.', '', {
-          timeOut: 5000,
-          positionClass: 'toast-top-right',
-          closeButton: true,
-          progressBar: true,
-        });
-      }
-    });
+    this.invitationStateService
+      .accept(this.guestList.toGuestNames())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.reset();
+          this.closeModal.emit();
+          this.toastr.success(INVITATION_MESSAGES.accepted);
+        },
+        error: () => {
+          this.currentStep = 'guests';
+          this.toastr.error(INVITATION_MESSAGES.acceptError);
+        },
+      });
   }
 
-  reset() {
+  reset(): void {
+    this.clearGuestStepTimer();
     this.currentStep = 'confirmation';
-    this.isConfirmed = null;
-    this.nameCurrent = '';
-    this.listName = this.hostName ? [this.hostName] : [];
-    this.registrationSent = false;
+    this.willAttend = null;
+    this.draftName = '';
+    this.guestList = this.guestList.withHostOnly();
   }
 
-  onClose() {
+  private clearGuestStepTimer(): void {
+    if (this.guestStepTimer === undefined) {
+      return;
+    }
+    window.clearTimeout(this.guestStepTimer);
+    this.guestStepTimer = undefined;
+  }
+
+  onClose(): void {
     this.reset();
     this.closeModal.emit();
   }

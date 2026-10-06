@@ -1,6 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { TicketsIcon } from '@hugeicons/core-free-icons';
 import { MODEL_02_INFO } from '../../constants/model-02-info';
@@ -12,25 +12,10 @@ import { InvitationStateService } from '../../../shared/services/invitation-stat
   imports: [CommonModule, HugeiconsIconComponent],
   templateUrl: './m02-passes.component.html',
 })
-export class M02PassesComponent implements OnInit, OnDestroy {
+export class M02PassesComponent {
   readonly info = MODEL_02_INFO;
   readonly icon = TicketsIcon;
-  reservedPasses = 2;
-
-  private subscription?: Subscription;
-
-  constructor(private invitationStateService: InvitationStateService) {}
-
-  ngOnInit(): void {
-    this.subscription = this.invitationStateService.getInvitationData$().subscribe((data) => {
-      const passes = data?.data.invitation.seats_reserved;
-      if (passes != null) {
-        this.reservedPasses = passes;
-      }
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
-  }
+  readonly reservedPasses$ = inject(InvitationStateService).seatsReserved$.pipe(
+    map((seats) => seats ?? 2),
+  );
 }

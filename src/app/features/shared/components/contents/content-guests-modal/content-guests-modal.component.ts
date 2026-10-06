@@ -1,10 +1,16 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
-import { InvitationStateService } from '../../../services/invitation-state.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ToastrService } from 'ngx-toastr';
+import { filter } from 'rxjs/operators';
+import { INVITATION_MESSAGES } from '../../../constants/invitation-messages';
+import { GuestList } from '../../../domain/guest-list';
 import { InvitationInfoResponse } from '../../../interfaces/invitation.interface';
+import { InvitationStateService } from '../../../services/invitation-state.service';
 import { ConfirmAlertComponent } from '../../common/confirm-alert/confirm-alert.component';
+
+const CLOSE_AFTER_SEND_MS = 1500;
 
 @Component({
   selector: 'app-content-guests-modal',
@@ -13,55 +19,72 @@ import { ConfirmAlertComponent } from '../../common/confirm-alert/confirm-alert.
   templateUrl: './content-guests-modal.component.html',
   styleUrl: './content-guests-modal.component.css',
 })
-export class ContentGuestsModalComponent implements OnInit, OnDestroy {
+export class ContentGuestsModalComponent implements OnInit {
   @Output() closeModal = new EventEmitter<void>();
-  
-  nameCurrent: string = '';
-  listName: string[] = [];
-  maximumQuotas: number = 7;
-  registrationSent: boolean = false;
-  hostName: string = '';
-  showPartialQuotasConfirm = false;
-  private subscription?: Subscription;
 
-  constructor(private invitationStateService: InvitationStateService) {}
+  draftName = '';
+  guestList = GuestList.empty();
+  registrationSent = false;
+  showPartialQuotasConfirm = false;
+
+  private readonly destroyRef = inject(DestroyRef);
+  private guestListReady = false;
+
+  constructor(
+    private invitationStateService: InvitationStateService,
+    private toastr: ToastrService,
+  ) {}
 
   ngOnInit(): void {
-    this.subscription = this.invitationStateService.getInvitationData$().subscribe(data => {
-      if (data) {
-        this.hostName = data.data.invitation.name || '';
-        
-        this.maximumQuotas = data.data.available_seats || 7;
-        
-        if (data.data.invitation.guests && data.data.invitation.guests.length > 0) {
-          this.listName = data.data.invitation.guests.map(guest => guest.name);
+    this.invitationStateService.invitationData$
+      .pipe(
+        filter((data): data is InvitationInfoResponse => data !== null),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((data) => {
+        if (this.guestListReady) {
+          return;
         }
-      }
-    });
+        this.guestList = GuestList.fromInvitation(data);
+        this.guestListReady = true;
+      });
   }
 
-  ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
+  get hostName(): string {
+    return this.guestList.hostName;
   }
 
-  saveName() {
-    const nombreTrim = this.nameCurrent.trim();
-    if (
-      nombreTrim &&
-      this.listName.length < this.maximumQuotas &&
-      !this.listName.includes(nombreTrim)
-    ) {
-      this.listName.push(nombreTrim);
-      this.nameCurrent = '';
+  get names(): readonly string[] {
+    return this.guestList.names;
+  }
+
+  get maximumSeats(): number {
+    return this.guestList.maximumSeats;
+  }
+
+  get canAddMoreGuests(): boolean {
+    return this.guestList.canAddMore;
+  }
+
+  get partialQuotasMessage(): string {
+    return this.guestList.partialMessage;
+  }
+
+  saveName(): void {
+    const nextList = this.guestList.add(this.draftName);
+    if (nextList === this.guestList) {
+      return;
     }
+    this.guestList = nextList;
+    this.draftName = '';
   }
 
-  deleteName(index: number) {
-    this.listName.splice(index, 1);
+  deleteName(index: number): void {
+    this.guestList = this.guestList.removeAt(index);
   }
 
-  confirmSend() {
-    if (this.listName.length < this.maximumQuotas) {
+  confirmSend(): void {
+    if (this.guestList.isPartial) {
       this.showPartialQuotasConfirm = true;
       return;
     }
@@ -69,24 +92,32 @@ export class ContentGuestsModalComponent implements OnInit, OnDestroy {
     this.send();
   }
 
-  confirmPartialSend() {
+  confirmPartialSend(): void {
     this.showPartialQuotasConfirm = false;
     this.send();
   }
 
-  cancelPartialSend() {
+  cancelPartialSend(): void {
     this.showPartialQuotasConfirm = false;
   }
 
-  get partialQuotasMessage(): string {
-    return `Solo estás registrando ${this.listName.length} de ${this.maximumQuotas} cupos.`;
-  }
+  send(): void {
+    if (!this.invitationStateService.getToken()) {
+      this.toastr.error(INVITATION_MESSAGES.missingToken);
+      return;
+    }
 
-  send() {
-    alert('Acompañantes confirmados: ' + this.listName.join(', '));
-    this.registrationSent = true;
-    setTimeout(() => {
-      this.closeModal.emit();
-    }, 1500);
+    this.invitationStateService
+      .accept(this.guestList.toGuestNames())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.registrationSent = true;
+          window.setTimeout(() => this.closeModal.emit(), CLOSE_AFTER_SEND_MS);
+        },
+        error: () => {
+          this.toastr.error(INVITATION_MESSAGES.acceptError);
+        },
+      });
   }
 }

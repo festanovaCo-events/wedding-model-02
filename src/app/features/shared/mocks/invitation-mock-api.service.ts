@@ -6,21 +6,22 @@ import {
   Guest,
   InvitationInfoResponse
 } from '../interfaces/invitation.interface';
+import { InvitationApi } from '../services/invitation-api';
 import { INVITATION_MOCKS } from './invitation.mock';
 
 @Injectable({ providedIn: 'root' })
-export class InvitationMockApiService {
+export class InvitationMockApiService implements InvitationApi {
   private readonly store = new Map<string, InvitationInfoResponse>();
 
   reset(): void {
     this.store.clear();
   }
 
-  getInfo(invitationToken: string): Observable<InvitationInfoResponse> {
+  getInvitationInfo(invitationToken: string): Observable<InvitationInfoResponse> {
     return of(this.clone(this.getOrCreate(invitationToken)));
   }
 
-  accept(
+  acceptInvitation(
     invitationToken: string,
     guestNames: string[]
   ): Observable<AcceptInvitationResponse> {
@@ -52,7 +53,7 @@ export class InvitationMockApiService {
     return of(this.clone(INVITATION_MOCKS.accept));
   }
 
-  decline(invitationToken: string): Observable<DeclineInvitationResponse> {
+  declineInvitation(invitationToken: string): Observable<DeclineInvitationResponse> {
     const current = this.getOrCreate(invitationToken);
     const now = new Date().toISOString();
 

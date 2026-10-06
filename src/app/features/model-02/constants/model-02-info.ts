@@ -1,4 +1,8 @@
 import { WEDDING_INFO } from '../../shared/constants/wedding-info';
+import { formatModelDate, formatModelTime } from '../../shared/utils/wedding-datetime';
+
+const ceremony = WEDDING_INFO.events.ceremony;
+const party = WEDDING_INFO.events.party;
 
 export const MODEL_02_INFO = {
   monogram: {
@@ -24,32 +28,27 @@ export const MODEL_02_INFO = {
     cta: 'TENEMOS EL HONOR DE INVITARTE A NUESTRA BODA',
   },
 
-  date: {
-    month: 'SEPTIEMBRE',
-    dayOfWeek: 'SÁBADO',
-    day: '12',
-    year: '2026',
-  },
+  date: formatModelDate(ceremony.startsAt),
 
   events: {
     ceremony: {
       title: 'CEREMONIA RELIGIOSA',
-      time: '5:00 PM',
-      place: WEDDING_INFO.events.ceremony.place,
-      address: WEDDING_INFO.events.ceremony.address,
-      mapsUrl: WEDDING_INFO.events.ceremony.mapsUrl,
+      time: formatModelTime(ceremony.startsAt),
+      place: ceremony.place,
+      address: ceremony.address,
+      mapsUrl: ceremony.mapsUrl,
     },
     reception: {
       title: 'RECEPCIÓN',
-      time: '7:30 PM',
-      place: WEDDING_INFO.events.party.place,
-      address: WEDDING_INFO.events.party.address,
-      mapsUrl: WEDDING_INFO.events.party.mapsUrl,
+      time: formatModelTime(party.startsAt),
+      place: party.place,
+      address: party.address,
+      mapsUrl: party.mapsUrl,
     },
   },
 
   timeline: [
-    { time: '5:00 PM', label: 'Iglesia', icon: 'church' },
+    { time: formatModelTime(ceremony.startsAt), label: 'Iglesia', icon: 'church' },
     { time: '6:30 PM', label: 'Coctel de bienvenida', icon: 'cocktail' },
     { time: '7:45 PM', label: 'Entrada de novios', icon: 'fireworks' },
     { time: '8:00 PM', label: 'Banquete', icon: 'dinner' },
@@ -96,13 +95,4 @@ export const MODEL_02_INFO = {
     eucalyptus: 'assets/images/model-02/eucalyptus.png',
     eucalyptusInvite: 'assets/images/model-02/eucalyptus-invite.png',
   },
-
-  colors: {
-    primary: '#4A5D4E',
-    primaryDark: '#3A4A3E',
-    sage: '#D4DFD4',
-    sageLight: '#E8EFE8',
-    text: '#3D4A3D',
-    textMuted: '#6B7A6B',
-  },
-} as const;
+};

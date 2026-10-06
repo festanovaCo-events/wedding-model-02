@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { AnimationOptions, LottieComponent } from 'ngx-lottie';
 import { Component } from '@angular/core';
 import { AnimationItem } from 'lottie-web';
-import { ACTIVE_THEME } from '../../../themes/active-theme';
+import { WEDDING_INFO } from '../../../constants/wedding-info';
 
 @Component({
   selector: 'app-loader-heart',
@@ -15,7 +15,7 @@ export class LoaderHeartComponent {
   private animationItem: AnimationItem | undefined;
 
   options: AnimationOptions = {
-    animationData: ACTIVE_THEME.animations.heart,
+    animationData: WEDDING_INFO.animations.heart,
     loop: true,
     autoplay: true,
   };

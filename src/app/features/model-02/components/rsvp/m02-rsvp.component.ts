@@ -1,6 +1,8 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { combineLatest } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { CheckmarkCircle02Icon } from '@hugeicons/core-free-icons';
 import { WEDDING_INFO } from '../../../shared/constants/wedding-info';
@@ -12,6 +14,13 @@ import { ErrorStatusComponent } from '../../../shared/components/confirmations/e
 import { InvitationStateService } from '../../../shared/services/invitation-state.service';
 import { ModalFlowService } from '../../../shared/services/modal-flow.service';
 import { InvitationInfoResponse } from '../../../shared/interfaces/invitation.interface';
+
+interface RsvpView {
+  invitationData: InvitationInfoResponse | null;
+  error: string | null;
+  isConfirmed: boolean;
+  isDeclined: boolean;
+}
 
 @Component({
   selector: 'app-m02-rsvp',
@@ -26,18 +35,25 @@ import { InvitationInfoResponse } from '../../../shared/interfaces/invitation.in
   ],
   templateUrl: './m02-rsvp.component.html',
 })
-export class M02RsvpComponent implements OnInit, OnDestroy {
+export class M02RsvpComponent implements OnInit {
   readonly weddingInfo = WEDDING_INFO;
   readonly info = MODEL_02_INFO;
   readonly icon = CheckmarkCircle02Icon;
+  readonly view$ = combineLatest([
+    inject(InvitationStateService).invitationData$,
+    inject(InvitationStateService).error$,
+  ]).pipe(
+    map(([invitationData, error]): RsvpView => ({
+      invitationData,
+      error,
+      isConfirmed: invitationData?.data.invitation.status === 'ACCEPTED',
+      isDeclined: invitationData?.data.invitation.status === 'DECLINED',
+    })),
+  );
 
   isConfirmationModalVisible = false;
-  invitationData: InvitationInfoResponse | null = null;
-  isConfirmed = false;
-  isDeclined = false;
-  error: string | null = null;
 
-  private subscriptions: Subscription[] = [];
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(
     private invitationStateService: InvitationStateService,
@@ -45,42 +61,23 @@ export class M02RsvpComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.error = this.invitationStateService.getError();
+    this.invitationStateService.error$
+      .pipe(
+        filter((error): error is string => !!error),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.isConfirmationModalVisible = false;
+      });
 
-    this.subscriptions.push(
-      this.invitationStateService.getInvitationData$().subscribe((data) => {
-        this.invitationData = data;
-        this.isConfirmed = data?.data.invitation.status === 'ACCEPTED';
-        this.isDeclined = data?.data.invitation.status === 'DECLINED';
-      }),
-    );
-
-    this.subscriptions.push(
-      this.invitationStateService.getError$().subscribe((error) => {
-        this.error = error;
-        if (error) {
-          this.isConfirmationModalVisible = false;
-        }
-      }),
-    );
-
-    this.subscriptions.push(
-      this.modalFlowService.openConfirmationModal$.subscribe(() => {
-        this.openConfirmation();
-      }),
-    );
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.forEach((sub) => sub.unsubscribe());
-  }
-
-  get canConfirm(): boolean {
-    return !this.isConfirmed && !this.isDeclined && !this.error;
+    this.modalFlowService.openConfirmationModal$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.openConfirmation());
   }
 
   openConfirmation(): void {
-    if (!this.canConfirm) {
+    const status = this.invitationStateService.getInvitationData()?.data.invitation.status;
+    if (status === 'ACCEPTED' || status === 'DECLINED' || this.invitationStateService.getError()) {
       return;
     }
     this.isConfirmationModalVisible = true;

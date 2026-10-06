@@ -6,6 +6,8 @@ import { API_MOCK_FLAGS } from '../constants/api-mock-flags';
 import { API_ROUTES } from '../constants/api-routes';
 import { INVITATION_MOCKS } from '../mocks/invitation.mock';
 import { InvitationMockApiService } from '../mocks/invitation-mock-api.service';
+import { INVITATION_API } from './invitation-api';
+import { RoutedInvitationApi } from './routed-invitation-api.service';
 import { InvitationService } from './invitation.service';
 
 describe('InvitationService', () => {
@@ -23,6 +25,7 @@ describe('InvitationService', () => {
     TestBed.configureTestingModule({
       providers: [
         InvitationService,
+        { provide: INVITATION_API, useExisting: RoutedInvitationApi },
         provideHttpClient(),
         provideHttpClientTesting()
       ]
