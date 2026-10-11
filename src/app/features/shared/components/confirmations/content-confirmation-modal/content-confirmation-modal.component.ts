@@ -68,8 +68,12 @@ export class ContentConfirmationModalComponent implements OnInit {
     return this.guestList.names;
   }
 
-  get maximumSeats(): number {
-    return this.guestList.maximumSeats;
+  get additionalGuests(): readonly string[] {
+    return this.guestList.additionalGuests;
+  }
+
+  get maximumAdditionalGuests(): number {
+    return this.guestList.additionalSeatLimit;
   }
 
   get canAddMoreGuests(): boolean {
@@ -77,7 +81,9 @@ export class ContentConfirmationModalComponent implements OnInit {
   }
 
   get partialQuotasMessage(): string {
-    return this.guestList.partialMessage;
+    const registered = this.guestList.names.length;
+    const seats = this.guestList.maximumSeats;
+    return `Solo estás registrando ${registered} de ${seats} cupos.`;
   }
 
   onConfirmChange(): void {
@@ -131,7 +137,8 @@ export class ContentConfirmationModalComponent implements OnInit {
     this.draftName = '';
   }
 
-  deleteName(index: number): void {
+  deleteName(name: string): void {
+    const index = this.guestList.names.indexOf(name);
     this.guestList = this.guestList.removeAt(index);
   }
 

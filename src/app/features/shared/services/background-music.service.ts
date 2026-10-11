@@ -12,8 +12,15 @@ export class BackgroundMusicService {
 
   play(): void {
     this.ensureAudio();
-    void this.audio?.play();
+    const audio = this.audio;
+    if (!audio) {
+      return;
+    }
+
     this.playing = true;
+    void audio.play().catch(() => {
+      this.playing = false;
+    });
   }
 
   pause(): void {

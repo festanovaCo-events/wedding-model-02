@@ -12,9 +12,22 @@ export function isConfirmationDeadlinePassed(
 
 export function shouldShowExpiredInvitationPage(
   status: InvitationStatus | undefined,
+  referenceDate: Date = new Date(),
 ): boolean {
-  return (
-    (status === 'DECLINED' && isConfirmationDeadlinePassed()) ||
-    (status === 'PENDING' && isConfirmationDeadlinePassed())
-  );
+  if (!isConfirmationDeadlinePassed(referenceDate)) {
+    return false;
+  }
+
+  switch (status) {
+    case 'PENDING':
+    case 'DECLINED':
+      return true;
+    case 'ACCEPTED':
+    case undefined:
+      return false;
+    default: {
+      const unexpectedStatus: never = status;
+      return unexpectedStatus;
+    }
+  }
 }

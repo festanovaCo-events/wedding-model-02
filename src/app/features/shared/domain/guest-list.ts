@@ -1,7 +1,5 @@
 import { InvitationInfoResponse } from '../interfaces/invitation.interface';
 
-const DEFAULT_SEAT_LIMIT = 7;
-
 export class GuestList {
   private constructor(
     readonly hostName: string,
@@ -10,12 +8,12 @@ export class GuestList {
   ) {}
 
   static empty(): GuestList {
-    return new GuestList('', DEFAULT_SEAT_LIMIT, []);
+    return new GuestList('', 0, []);
   }
 
   static fromInvitation(data: InvitationInfoResponse): GuestList {
     const hostName = data.data.invitation.name || '';
-    const maximumSeats = data.data.available_seats ?? DEFAULT_SEAT_LIMIT;
+    const maximumSeats = data.data.invitation.seats_reserved;
     const names = hostName ? [hostName] : [];
 
     for (const guest of data.data.invitation.guests ?? []) {
@@ -31,16 +29,16 @@ export class GuestList {
     return this.names.filter((name) => name !== this.hostName);
   }
 
+  get additionalSeatLimit(): number {
+    return Math.max(this.maximumSeats - 1, 0);
+  }
+
   get canAddMore(): boolean {
-    return this.additionalGuests.length < Math.max(this.maximumSeats - 1, 0);
+    return this.additionalGuests.length < this.additionalSeatLimit;
   }
 
   get isPartial(): boolean {
     return this.names.length < this.maximumSeats;
-  }
-
-  get partialMessage(): string {
-    return `Solo estás registrando ${this.names.length} de ${this.maximumSeats} cupos.`;
   }
 
   add(rawName: string): GuestList {

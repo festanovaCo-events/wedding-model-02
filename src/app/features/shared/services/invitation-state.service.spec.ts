@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
+import { of, throwError } from 'rxjs';
+import { InvitationInfoResponse } from '../interfaces/invitation.interface';
 import { InvitationMockApiService } from '../mocks/invitation-mock-api.service';
-import { INVITATION_API } from './invitation-api';
+import { INVITATION_API, InvitationApi } from './invitation-api';
 import { InvitationStateService, MissingInvitationTokenError } from './invitation-state.service';
 
 describe('InvitationStateService', () => {
@@ -68,6 +70,58 @@ describe('InvitationStateService', () => {
         expect(error).toBeInstanceOf(MissingInvitationTokenError);
         done();
       },
+    });
+  });
+});
+
+describe('InvitationStateService when the refresh fails', () => {
+  const pending: InvitationInfoResponse = {
+    success: true,
+    data: {
+      available_seats: 2,
+      used_seats: 1,
+      total_seats: 2,
+      invitation: {
+        id: 'invitation-1',
+        name: 'Jorge Mestre',
+        status: 'PENDING',
+        seats_reserved: 2,
+        token: 'TOKEN_TEST',
+        guests: [],
+      },
+    },
+  };
+
+  it('rejects accept so the caller does not treat a stale status as success', (done) => {
+    let reads = 0;
+    const api: InvitationApi = {
+      getInvitationInfo: () => {
+        reads += 1;
+        if (reads === 1) {
+          return of(pending);
+        }
+        return throwError(() => new Error('refresh failed'));
+      },
+      acceptInvitation: () => of({ success: true, data: null }),
+      declineInvitation: () => of({ success: true, data: null }),
+    };
+
+    TestBed.configureTestingModule({
+      providers: [
+        InvitationStateService,
+        { provide: INVITATION_API, useValue: api },
+      ],
+    });
+
+    const failingService = TestBed.inject(InvitationStateService);
+    failingService.load('TOKEN_TEST').subscribe(() => {
+      failingService.accept(['Jorge Mestre']).subscribe({
+        next: () => done.fail('accept should fail when the refresh fails'),
+        error: () => {
+          expect(failingService.getInvitationData()?.data.invitation.status).toBe('PENDING');
+          done();
+        },
+      });
     });
   });
 });

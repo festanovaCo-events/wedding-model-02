@@ -76,19 +76,12 @@
 
         <!-- Lista de nombres -->
         <div class="w-full">
-            <p class="text-sm text-gray-600 mt-4">Lista de acompañantes ({{ names.length }}/{{ maximumSeats }}):</p>
-            <p class="text-sm text-gray-600">Máximo {{ maximumSeats }} acompañantes.</p>
+            <p class="text-sm text-gray-600 mt-4">Lista de acompañantes ({{ additionalGuests.length }}/{{ maximumAdditionalGuests }}):</p>
+            <p class="text-sm text-gray-600">Máximo {{ maximumAdditionalGuests }} acompañantes.</p>
             <ul class="mt-4 space-y-2 text-gray-700">
-                <li *ngFor="let nombre of names; let i = index" class="flex justify-between items-center">
-                    <div class="flex items-center gap-2">
-                        <p class="text-[28px] font-cookie text-theme-text font-medium capitalize">{{ nombre }}</p>
-                        <!-- Mostrar badge "Asignado" si es el anfitrión -->
-                        <span *ngIf="nombre === hostName" class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                            Asignado
-                        </span>
-                    </div>
-                    <!-- Solo mostrar botón eliminar si NO es el anfitrión -->
-                    <button *ngIf="nombre !== hostName" type="button" (click)="deleteName(i)"
+                <li *ngFor="let nombre of additionalGuests" class="flex justify-between items-center">
+                    <p class="text-[28px] font-cookie text-theme-text font-medium capitalize">{{ nombre }}</p>
+                    <button type="button" (click)="deleteName(nombre)"
                         class="text-primary-soft text-sm hover:underline cursor-pointer">
                         Eliminar
                     </button>

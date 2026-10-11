@@ -4,6 +4,32 @@ import { formatModelDate, formatModelTime } from '../../shared/utils/wedding-dat
 const ceremony = WEDDING_INFO.events.ceremony;
 const party = WEDDING_INFO.events.party;
 
+const MODEL_02_TIMELINE_ICONS = [
+  'church',
+  'cocktail',
+  'fireworks',
+  'dinner',
+  'party',
+  'clock',
+] as const;
+
+export type Model02TimelineIcon = (typeof MODEL_02_TIMELINE_ICONS)[number];
+
+interface Model02TimelineItem {
+  time: string;
+  label: string;
+  icon: Model02TimelineIcon;
+}
+
+const timeline: readonly Model02TimelineItem[] = [
+  { time: formatModelTime(ceremony.startsAt), label: 'Iglesia', icon: 'church' },
+  { time: '6:30 PM', label: 'Coctel de bienvenida', icon: 'cocktail' },
+  { time: '7:45 PM', label: 'Entrada de novios', icon: 'fireworks' },
+  { time: '8:00 PM', label: 'Banquete', icon: 'dinner' },
+  { time: '9:00 PM', label: 'Fiesta', icon: 'party' },
+  { time: '3:30 AM', label: 'Despedida', icon: 'clock' },
+];
+
 export const MODEL_02_INFO = {
   monogram: {
     letter1: WEDDING_INFO.couple.husbandName.charAt(0).toUpperCase(),
@@ -47,14 +73,7 @@ export const MODEL_02_INFO = {
     },
   },
 
-  timeline: [
-    { time: formatModelTime(ceremony.startsAt), label: 'Iglesia', icon: 'church' },
-    { time: '6:30 PM', label: 'Coctel de bienvenida', icon: 'cocktail' },
-    { time: '7:45 PM', label: 'Entrada de novios', icon: 'fireworks' },
-    { time: '8:00 PM', label: 'Banquete', icon: 'dinner' },
-    { time: '9:00 PM', label: 'Fiesta', icon: 'party' },
-    { time: '3:30 AM', label: 'Despedida', icon: 'clock' },
-  ],
+  timeline,
 
   passes: {
     label: 'PASES',

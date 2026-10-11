@@ -1,12 +1,13 @@
 import { Inject, Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { catchError, map, switchMap, tap } from 'rxjs/operators';
+import { catchError, finalize, map, switchMap, tap } from 'rxjs/operators';
 import { INVITATION_MESSAGES } from '../constants/invitation-messages';
 import {
   AcceptInvitationResponse,
   DeclineInvitationResponse,
   InvitationInfoResponse,
   InvitationStatus,
+  invitationStatusView,
 } from '../interfaces/invitation.interface';
 import { INVITATION_API, InvitationApi } from './invitation-api';
 
@@ -51,7 +52,7 @@ export class InvitationStateService {
   }
 
   isConfirmed(): boolean {
-    return this.invitationDataSubject.value?.data.invitation.status === 'ACCEPTED';
+    return invitationStatusView(this.invitationDataSubject.value?.data.invitation.status).isAccepted;
   }
 
   load(invitationToken: string, options?: { force?: boolean }): Observable<InvitationInfoResponse> {
@@ -77,12 +78,7 @@ export class InvitationStateService {
     }
 
     return this.invitationApi.acceptInvitation(token, guestNames).pipe(
-      switchMap((response) =>
-        this.read(token).pipe(
-          map(() => response),
-          catchError(() => of(response)),
-        ),
-      ),
+      switchMap((response) => this.read(token).pipe(map(() => response))),
     );
   }
 
@@ -93,12 +89,7 @@ export class InvitationStateService {
     }
 
     return this.invitationApi.declineInvitation(token).pipe(
-      switchMap((response) =>
-        this.read(token).pipe(
-          map(() => response),
-          catchError(() => of(response)),
-        ),
-      ),
+      switchMap((response) => this.read(token).pipe(map(() => response))),
     );
   }
 
@@ -108,12 +99,8 @@ export class InvitationStateService {
     return this.invitationApi.getInvitationInfo(invitationToken).pipe(
       tap((response) => {
         this.invitationDataSubject.next(response);
-        this.loadingSubject.next(false);
       }),
-      catchError((error: unknown) => {
-        this.loadingSubject.next(false);
-        return throwError(() => error);
-      }),
+      finalize(() => this.loadingSubject.next(false)),
     );
   }
 }

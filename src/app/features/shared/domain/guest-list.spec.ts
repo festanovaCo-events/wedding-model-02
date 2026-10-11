@@ -48,10 +48,29 @@ describe('GuestList', () => {
     expect(list.removeAt(1).names).toEqual(['Jorge Mestre']);
   });
 
-  it('describes a partial registration', () => {
+  it('knows when registered names do not fill every seat', () => {
     const list = GuestList.fromInvitation(invitation());
 
     expect(list.isPartial).toBeTrue();
-    expect(list.partialMessage).toBe('Solo estás registrando 1 de 2 cupos.');
+    expect(list.additionalGuests).toEqual([]);
+    expect(list.additionalSeatLimit).toBe(1);
+  });
+
+  it('limits the list with seats_reserved when available seats are different', () => {
+    const list = GuestList.fromInvitation(
+      invitation({
+        available_seats: 7,
+        invitation: {
+          id: 'invitation-1',
+          name: 'Jorge Mestre',
+          status: 'PENDING',
+          seats_reserved: 2,
+          guests: [{ id: 'guest-1', name: 'Jorge Mestre' }],
+        },
+      }),
+    );
+
+    expect(list.maximumSeats).toBe(2);
+    expect(list.add('Uno').add('Dos').names).toEqual(['Jorge Mestre', 'Uno']);
   });
 });

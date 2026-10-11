@@ -51,6 +51,7 @@ export class LayoutComponent implements OnInit {
 
   private readonly destroyRef = inject(DestroyRef);
   private startTime = 0;
+  private initialLoaderSettled = false;
   private readonly timers: number[] = [];
 
   constructor(
@@ -63,20 +64,8 @@ export class LayoutComponent implements OnInit {
   ngOnInit(): void {
     this.startTime = Date.now();
 
-    this.later(MAX_LOADER_MS, () => {
-      if (!this.isLoading) {
-        return;
-      }
-      this.isLoading = false;
-      this.showContent = true;
-      this.scrollLock.unlock();
-    });
-
-    this.later(MIN_LOADER_MS, () => {
-      this.isLoading = false;
-      this.showContent = true;
-      this.scrollLock.lock();
-    });
+    this.later(MIN_LOADER_MS, () => this.settleInitialLoader());
+    this.later(MAX_LOADER_MS, () => this.settleInitialLoader());
 
     this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
       if (event instanceof NavigationStart) {
@@ -137,6 +126,19 @@ export class LayoutComponent implements OnInit {
     el.classList.remove('app-pulse', 'app-slide-in-down');
     void el.offsetWidth;
     el.classList.add('app-pulse');
+  }
+
+  private settleInitialLoader(): void {
+    if (this.initialLoaderSettled) {
+      return;
+    }
+
+    this.initialLoaderSettled = true;
+    this.isLoading = false;
+    this.showContent = true;
+    if (!this.modalDismissed) {
+      this.scrollLock.lock();
+    }
   }
 
   private finishNavigationLoader(): void {

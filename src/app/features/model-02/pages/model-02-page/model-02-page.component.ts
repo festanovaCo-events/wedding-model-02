@@ -2,7 +2,8 @@ import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs/operators';
+import { EMPTY } from 'rxjs';
+import { catchError, filter, switchMap } from 'rxjs/operators';
 import { MODEL_02_INFO } from '../../constants/model-02-info';
 import { M02HeroComponent } from '../../components/hero/m02-hero.component';
 import { M02InvitationComponent } from '../../components/invitation/m02-invitation.component';
@@ -17,7 +18,7 @@ import { ModalComponent } from '../../../shared/components/common/modal/modal.co
 import { ConfirmationGuideStore } from '../../../shared/services/confirmation-guide.store';
 import { ModalFlowService } from '../../../shared/services/modal-flow.service';
 import { InvitationStateService } from '../../../shared/services/invitation-state.service';
-import { InvitationInfoResponse } from '../../../shared/interfaces/invitation.interface';
+import { InvitationInfoResponse, hasResponded } from '../../../shared/interfaces/invitation.interface';
 import { shouldShowExpiredInvitationPage } from '../../../shared/utils/confirmation-deadline';
 
 @Component({
@@ -57,31 +58,34 @@ export class Model02PageComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
-      this.isPreviewMode = params['preview'] === '1';
-      const invitationToken = params['token'] as string | undefined;
+    this.route.queryParams
+      .pipe(
+        switchMap((params) => {
+          this.isPreviewMode = params['preview'] === '1';
+          const invitationToken = typeof params['token'] === 'string' ? params['token'] : undefined;
 
-      if (!invitationToken) {
-        this.invitationLoadPending = false;
-        if (this.welcomeAccepted) {
-          this.tryShowConfirmationGuide();
-        }
-        return;
-      }
-
-      this.invitationLoadPending = true;
-      this.invitationStateService
-        .load(invitationToken)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-        error: () => {
-          this.invitationLoadPending = false;
-          if (this.welcomeAccepted) {
-            this.tryShowConfirmationGuide();
+          if (!invitationToken) {
+            this.invitationLoadPending = false;
+            if (this.welcomeAccepted) {
+              this.tryShowConfirmationGuide();
+            }
+            return EMPTY;
           }
-        },
-      });
-    });
+
+          this.invitationLoadPending = true;
+          return this.invitationStateService.load(invitationToken).pipe(
+            catchError(() => {
+              this.invitationLoadPending = false;
+              if (this.welcomeAccepted) {
+                this.tryShowConfirmationGuide();
+              }
+              return EMPTY;
+            }),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
 
     this.modalFlowService.welcomeModalAccepted$
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -119,7 +123,7 @@ export class Model02PageComponent implements OnInit {
       return;
     }
 
-    if (status === 'ACCEPTED' || status === 'DECLINED') {
+    if (hasResponded(status)) {
       this.dismissConfirmationGuide();
       return;
     }
@@ -135,7 +139,7 @@ export class Model02PageComponent implements OnInit {
     }
 
     const status = this.invitationStateService.getInvitationData()?.data.invitation.status;
-    if (status === 'ACCEPTED' || status === 'DECLINED') {
+    if (hasResponded(status)) {
       return false;
     }
 
