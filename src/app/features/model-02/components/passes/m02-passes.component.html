@@ -11,7 +11,7 @@
   <p class="m02-passes__reserved">{{ info.passes.reservedLabel }}</p>
   <p class="m02-passes__row">
     <span>{{ info.passes.forYou }}</span>
-    <span class="m02-passes__count">{{ reservedPasses }}</span>
+    <span class="m02-passes__count">{{ reservedPasses$ | async }}</span>
     <span>{{ info.passes.suffix }}</span>
   </p>
 </div>

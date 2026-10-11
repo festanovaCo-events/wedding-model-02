@@ -1,10 +1,11 @@
+@if (view$ | async; as view) {
 <div class="m02-rsvp">
-  @if (isConfirmed) {
-    <app-confirmation-status [invitationData]="invitationData"></app-confirmation-status>
-  } @else if (isDeclined) {
+  @if (view.isConfirmed) {
+    <app-confirmation-status [invitationData]="view.invitationData"></app-confirmation-status>
+  } @else if (view.isDeclined) {
     <app-declined-status></app-declined-status>
-  } @else if (error) {
-    <app-error-status [error]="error"></app-error-status>
+  } @else if (view.error) {
+    <app-error-status [error]="view.error"></app-error-status>
   } @else {
     <div class="m02-rsvp__icon" aria-hidden="true">
       <hugeicons-icon
@@ -24,5 +25,6 @@
     </button>
   }
 </div>
+}
 
 <app-confirmation-modal-host [show]="isConfirmationModalVisible" (close)="closeConfirmationModal()" />

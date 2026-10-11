@@ -1,75 +1,28 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../../environments/environment';
-import { API_MOCK_FLAGS } from '../constants/api-mock-flags';
-import { API_ROUTES } from '../constants/api-routes';
-import { InvitationMockApiService } from '../mocks/invitation-mock-api.service';
-import { 
-  InvitationInfoResponse, 
-  AcceptInvitationRequest, 
-  AcceptInvitationResponse, 
-  DeclineInvitationResponse 
+import {
+  AcceptInvitationResponse,
+  DeclineInvitationResponse,
+  InvitationInfoResponse,
 } from '../interfaces/invitation.interface';
+import { INVITATION_API, InvitationApi } from './invitation-api';
 
 @Injectable({ providedIn: 'root' })
 export class InvitationService {
-  constructor(
-    private http: HttpClient,
-    private invitationMockApi: InvitationMockApiService
-  ) {}
+  constructor(@Inject(INVITATION_API) private invitationApi: InvitationApi) {}
 
-  /**
-   * Obtener información de una invitación usando el token único
-   * @param invitation_token Token único de la invitación (va en la ruta)
-   * @returns Observable con la información de la invitación
-   */
-  getInvitationInfo(invitation_token: string): Observable<InvitationInfoResponse> {
-    if (API_MOCK_FLAGS.invitation.getInfo) {
-      return this.invitationMockApi.getInfo(invitation_token);
-    }
-
-    const url = `${environment.apiBaseUrl}${API_ROUTES.invitation.getInfo(invitation_token)}`;
-
-    return this.http.get<InvitationInfoResponse>(url);
+  getInvitationInfo(invitationToken: string): Observable<InvitationInfoResponse> {
+    return this.invitationApi.getInvitationInfo(invitationToken);
   }
 
-  /**
-   * Aceptar invitación y registrar acompañantes
-   * @param invitation_token Token único de la invitación
-   * @param guestNames Lista de nombres de los acompañantes
-   * @returns Observable con la respuesta de aceptación
-   */
   acceptInvitation(
-    invitation_token: string, 
-    guestNames: string[]
+    invitationToken: string,
+    guestNames: string[],
   ): Observable<AcceptInvitationResponse> {
-    if (API_MOCK_FLAGS.invitation.accept) {
-      return this.invitationMockApi.accept(invitation_token, guestNames);
-    }
-
-    const url = `${environment.apiBaseUrl}${API_ROUTES.invitation.accept(invitation_token)}`;
-    const body: AcceptInvitationRequest = {
-      guest_names: guestNames
-    };
-
-    return this.http.post<AcceptInvitationResponse>(url, body);
+    return this.invitationApi.acceptInvitation(invitationToken, guestNames);
   }
 
-  /**
-   * Rechazar invitación
-   * @param invitation_token Token único de la invitación
-   * @returns Observable con la respuesta de rechazo
-   */
-  declineInvitation(
-    invitation_token: string
-  ): Observable<DeclineInvitationResponse> {
-    if (API_MOCK_FLAGS.invitation.decline) {
-      return this.invitationMockApi.decline(invitation_token);
-    }
-
-    const url = `${environment.apiBaseUrl}${API_ROUTES.invitation.decline(invitation_token)}`;
-
-    return this.http.get<DeclineInvitationResponse>(url);
+  declineInvitation(invitationToken: string): Observable<DeclineInvitationResponse> {
+    return this.invitationApi.declineInvitation(invitationToken);
   }
 }

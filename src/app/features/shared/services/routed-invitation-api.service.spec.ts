@@ -6,10 +6,10 @@ import { API_MOCK_FLAGS } from '../constants/api-mock-flags';
 import { API_ROUTES } from '../constants/api-routes';
 import { INVITATION_MOCKS } from '../mocks/invitation.mock';
 import { InvitationMockApiService } from '../mocks/invitation-mock-api.service';
-import { InvitationService } from './invitation.service';
+import { RoutedInvitationApi } from './routed-invitation-api.service';
 
-describe('InvitationService', () => {
-  let service: InvitationService;
+describe('RoutedInvitationApi', () => {
+  let service: RoutedInvitationApi;
   let httpMock: HttpTestingController;
   let invitationMockApi: InvitationMockApiService;
   let invitationFlags: Record<keyof typeof API_MOCK_FLAGS.invitation, boolean>;
@@ -22,13 +22,12 @@ describe('InvitationService', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        InvitationService,
         provideHttpClient(),
         provideHttpClientTesting()
       ]
     });
 
-    service = TestBed.inject(InvitationService);
+    service = TestBed.inject(RoutedInvitationApi);
     httpMock = TestBed.inject(HttpTestingController);
     invitationMockApi = TestBed.inject(InvitationMockApiService);
     invitationMockApi.reset();

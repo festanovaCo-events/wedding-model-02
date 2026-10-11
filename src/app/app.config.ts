@@ -10,6 +10,8 @@ import {
 import { provideToastr } from 'ngx-toastr';
 
 import { routes } from './app.routes';
+import { INVITATION_API } from './features/shared/services/invitation-api';
+import { RoutedInvitationApi } from './features/shared/services/routed-invitation-api.service';
 
 const CLOUDINARY_CLOUD = 'dwx09pwkr';
 
@@ -41,6 +43,7 @@ export const appConfig: ApplicationConfig = {
     }),
     provideCacheableAnimationLoader(),
     provideRouter(routes),
+    { provide: INVITATION_API, useExisting: RoutedInvitationApi },
     {
       provide: IMAGE_LOADER,
       useValue: customImageLoader,

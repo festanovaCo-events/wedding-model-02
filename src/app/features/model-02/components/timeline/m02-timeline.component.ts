@@ -9,7 +9,7 @@ import {
   SpoonAndForkIcon,
   Time04Icon,
 } from '@hugeicons/core-free-icons';
-import { MODEL_02_INFO } from '../../constants/model-02-info';
+import { MODEL_02_INFO, Model02TimelineIcon } from '../../constants/model-02-info';
 
 @Component({
   selector: 'app-m02-timeline',
@@ -20,12 +20,12 @@ import { MODEL_02_INFO } from '../../constants/model-02-info';
 export class M02TimelineComponent {
   readonly info = MODEL_02_INFO;
 
-  readonly timelineIcons = {
+  readonly timelineIcons: Record<Model02TimelineIcon, typeof ChurchIcon> = {
     church: ChurchIcon,
     cocktail: DrinkIcon,
     fireworks: FireworksIcon,
     dinner: SpoonAndForkIcon,
     party: MusicNote01Icon,
     clock: Time04Icon,
-  } as const;
+  };
 }
