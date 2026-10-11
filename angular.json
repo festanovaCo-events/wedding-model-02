@@ -30,26 +30,9 @@
                 "glob": "robots.txt",
                 "input": "src",
                 "output": "/"
-              },
-              {
-                "glob": "jquery.min.js",
-                "input": "node_modules/jquery/dist",
-                "output": "/vendor"
-              },
-              {
-                "glob": "slick.min.js",
-                "input": "node_modules/slick-carousel/slick",
-                "output": "/vendor"
               }
             ],
-            "styles": [
-              "src/styles.css",
-
-              "@fancyapps/ui/dist/fancybox/fancybox.css",
-              "node_modules/slick-carousel/slick/slick.css",
-              "node_modules/slick-carousel/slick/slick-theme.css",
-              "src/slick-font-inline.generated.css"
-            ],
+            "styles": ["src/styles.css"],
             "scripts": []
           },
           "configurations": {
@@ -117,14 +100,7 @@
             "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "tsconfig.spec.json",
             "assets": ["src/assets"],
-            "styles": [
-              "src/styles.css",
-
-              "@fancyapps/ui/dist/fancybox/fancybox.css",
-              "node_modules/slick-carousel/slick/slick.css",
-              "node_modules/slick-carousel/slick/slick-theme.css",
-              "src/slick-font-inline.generated.css"
-            ],
+            "styles": ["src/styles.css"],
             "scripts": []
           }
         }

@@ -60,8 +60,6 @@ export const WEDDING_INFO = {
 
   quote: {
     text: 'Por encima de todo,\nvistanse de amor, que es el vinculo perfecto.',
-    openingQuoteImage: 'assets/images/banner-home/comilla-apertura.svg',
-    closingQuoteImage: 'assets/images/banner-home/comilla-cierre.svg',
   },
 
   events: {
@@ -104,6 +102,7 @@ export const WEDDING_INFO = {
     bannerImage: ACTIVE_THEME.assets.bannerImage,
     backgroundImage: ACTIVE_THEME.assets.decorations.eventScheduleLines,
     instagramBackground: ACTIVE_THEME.assets.instagramBackground,
+    // publicId: para NgOptimizedImage (srcset automático, q_auto, f_auto)
     portraits: [
       {
         publicId: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80',
