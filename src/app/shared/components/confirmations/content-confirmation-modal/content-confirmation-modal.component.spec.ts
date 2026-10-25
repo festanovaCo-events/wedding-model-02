@@ -3,6 +3,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { GUEST_STEP_DELAY_MS } from '../../../constants/ui-timing';
 import { InvitationInfoResponse } from '../../../interfaces/invitation.interface';
 import { InvitationStateService } from '../../../services/invitation-state.service';
 import { ContentConfirmationModalComponent } from './content-confirmation-modal.component';
@@ -61,7 +62,7 @@ describe('ContentConfirmationModalComponent', () => {
     component.onConfirmChange();
 
     expect(component.currentStep).toBe('loading');
-    tick(1500);
+    tick(GUEST_STEP_DELAY_MS);
     expect(component.currentStep).toBe('guests');
     expect(component.maximumAdditionalGuests).toBe(1);
     expect(component.partialQuotasMessage).toBe('Solo estás registrando 1 de 2 cupos.');

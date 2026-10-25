@@ -19,14 +19,11 @@ import { CommonModule } from '@angular/common';
 import { LoaderHeartComponent } from '../components/common/entrances/loader-heart/loader-heart.component';
 import { SplashMusicComponent } from '../components/ui/lottie/splash-music/splash-music.component';
 import { FooterComponent } from '../components/common/footer/footer.component';
+import { MAX_LOADER_MS, MIN_LOADER_MS, SPLASH_PAUSE_DELAY_MS } from '../constants/ui-timing';
 import { WEDDING_INFO } from '../constants/wedding-info';
 import { BackgroundMusicService } from '../services/background-music.service';
 import { ModalFlowService } from '../services/modal-flow.service';
 import { ScrollLockService } from '../services/scroll-lock.service';
-
-const MIN_LOADER_MS = 2000;
-const MAX_LOADER_MS = 5000;
-const SPLASH_PAUSE_DELAY_MS = 300;
 
 @Component({
   standalone: true,

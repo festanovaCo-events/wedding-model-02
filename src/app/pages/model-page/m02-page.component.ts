@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EMPTY } from 'rxjs';
 import { catchError, filter, switchMap } from 'rxjs/operators';
 import { MODEL_02_INFO } from '../../constants/m02-info';
+import { APP_ROUTES, PREVIEW_QUERY_PARAM, PREVIEW_QUERY_VALUE } from '../../shared/constants/app-routes';
 import { M02HeroComponent } from '../../components/hero/m02-hero.component';
 import { M02InvitationComponent } from '../../components/invitation/m02-invitation.component';
 import { M02EventsComponent } from '../../components/events/m02-events.component';
@@ -15,6 +16,7 @@ import { M02RsvpComponent } from '../../components/rsvp/m02-rsvp.component';
 import { M02AdultsOnlyComponent } from '../../components/adults-only/m02-adults-only.component';
 import { M02FooterComponent } from '../../components/footer/m02-footer.component';
 import { ModalComponent } from '../../shared/components/common/modal/modal.component';
+import { ConfirmationModalHostComponent } from '../../shared/components/confirmations/confirmation-modal-host.component';
 import { ConfirmationGuideStore } from '../../shared/services/confirmation-guide.store';
 import { ModalFlowService } from '../../shared/services/modal-flow.service';
 import { InvitationStateService } from '../../shared/services/invitation-state.service';
@@ -36,13 +38,16 @@ import { shouldShowExpiredInvitationPage } from '../../shared/utils/confirmation
     M02AdultsOnlyComponent,
     M02FooterComponent,
     ModalComponent,
+    ConfirmationModalHostComponent,
   ],
   templateUrl: './m02-page.component.html',
 })
 export class M02PageComponent implements OnInit {
   readonly assets = MODEL_02_INFO.assets;
+  readonly guide = MODEL_02_INFO.confirmationGuide;
 
   showConfirmationGuide = false;
+  showConfirmationModal = false;
 
   private readonly destroyRef = inject(DestroyRef);
   private welcomeAccepted = false;
@@ -61,7 +66,7 @@ export class M02PageComponent implements OnInit {
     this.route.queryParams
       .pipe(
         switchMap((params) => {
-          this.isPreviewMode = params['preview'] === '1';
+          this.isPreviewMode = params[PREVIEW_QUERY_PARAM] === PREVIEW_QUERY_VALUE;
           const invitationToken = typeof params['token'] === 'string' ? params['token'] : undefined;
 
           if (!invitationToken) {
@@ -100,11 +105,33 @@ export class M02PageComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((data) => this.handleInvitation(data));
+
+    this.invitationStateService.error$
+      .pipe(
+        filter((error): error is string => !!error),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.showConfirmationModal = false;
+      });
   }
 
   openConfirmation(): void {
-    this.closeGuide();
-    this.modalFlowService.requestOpenConfirmationModal();
+    this.dismissConfirmationGuide();
+    this.openConfirmationFromSection();
+  }
+
+  openConfirmationFromSection(): void {
+    const status = this.invitationStateService.getInvitationData()?.data.invitation.status;
+    if (hasResponded(status) || this.invitationStateService.getError()) {
+      return;
+    }
+
+    this.showConfirmationModal = true;
+  }
+
+  closeConfirmationModal(): void {
+    this.showConfirmationModal = false;
   }
 
   closeGuide(): void {
@@ -116,7 +143,7 @@ export class M02PageComponent implements OnInit {
 
     const status = data.data.invitation.status;
     if (!this.isPreviewMode && shouldShowExpiredInvitationPage(status)) {
-      void this.router.navigate(['/expired'], {
+      void this.router.navigate([APP_ROUTES.expired], {
         queryParamsHandling: 'preserve',
         replaceUrl: true,
       });

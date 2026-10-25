@@ -3,8 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { FavouriteIcon } from '@hugeicons/core-free-icons';
 import { ExpiredBannerComponent } from '../../components/expired-banner/expired-banner.component';
 import { InvitationCardComponent } from '../../components/invitation-card/invitation-card.component';
+import { APP_ROUTES, INVITATION_PREVIEW_PATH } from '../../constants/app-routes';
+import { EXPIRED_INVITATION_COPY } from '../../constants/expired-invitation-copy';
 import { WEDDING_INFO } from '../../constants/wedding-info';
 import { InvitationStateService } from '../../services/invitation-state.service';
 import { InvitationInfoResponse } from '../../interfaces/invitation.interface';
@@ -13,15 +17,17 @@ import { shouldShowExpiredInvitationPage } from '../../utils/confirmation-deadli
 @Component({
   selector: 'app-wedding-expired-page',
   standalone: true,
-  imports: [CommonModule, ExpiredBannerComponent, InvitationCardComponent],
+  imports: [CommonModule, HugeiconsIconComponent, ExpiredBannerComponent, InvitationCardComponent],
   templateUrl: './wedding-expired-page.component.html',
   styleUrl: './wedding-expired-page.component.css',
 })
 export class WeddingExpiredPageComponent implements OnInit {
+  readonly copy = EXPIRED_INVITATION_COPY;
+  readonly heartIcon = FavouriteIcon;
   readonly coupleName = WEDDING_INFO.couple.fullName;
   readonly deadline = WEDDING_INFO.confirmation.deadlineLabel;
   readonly inviteeName$ = inject(InvitationStateService).hostName$.pipe(
-    map((name) => name?.split(' ')[0] || 'Invitado'),
+    map((name) => name?.split(' ')[0] || EXPIRED_INVITATION_COPY.fallbackName),
   );
 
   invitationUrl = '';
@@ -42,7 +48,7 @@ export class WeddingExpiredPageComponent implements OnInit {
       )
       .subscribe((data) => {
         if (!shouldShowExpiredInvitationPage(data.data.invitation.status)) {
-          void this.router.navigate(['/'], {
+          void this.router.navigate([APP_ROUTES.home], {
             queryParamsHandling: 'preserve',
             replaceUrl: true,
           });
@@ -59,7 +65,7 @@ export class WeddingExpiredPageComponent implements OnInit {
         return;
       }
 
-      this.invitationUrl = `${window.location.origin}/invitations-wedding-model-02?token=${encodeURIComponent(token)}`;
+      this.invitationUrl = `${window.location.origin}${INVITATION_PREVIEW_PATH}?token=${encodeURIComponent(token)}`;
       this.invitationStateService.load(token).pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
     });
   }

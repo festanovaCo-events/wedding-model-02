@@ -73,6 +73,8 @@ export const MODEL_02_INFO = {
     },
   },
 
+  timelineHeading: 'ITINERARIO',
+
   timeline,
 
   passes: {
@@ -93,6 +95,13 @@ export const MODEL_02_INFO = {
     title: 'CONFIRMACIÓN',
     text: 'AGRADECEMOS QUE CONFIRMES TU ASISTENCIA ANTES DEL',
     buttonText: 'CONFIRMAR ASISTENCIA',
+  },
+
+  confirmationGuide: {
+    title: '¡No olvides confirmar tu asistencia!',
+    text: 'Tu confirmación nos ayuda a organizar todo. Solo te tomará un momento.',
+    confirm: 'Confírmanos tu presencia',
+    later: 'Más tarde',
   },
 
   adultsOnly: {

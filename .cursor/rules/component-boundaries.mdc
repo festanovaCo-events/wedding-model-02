@@ -1,0 +1,60 @@
+---
+description: Los componentes solo pintan. Interfaces, constantes, datos y utilidades viven fuera. Sin barrels ni magic strings.
+globs: src/**/*.{ts,html}
+alwaysApply: true
+---
+
+# Límites del componente
+
+Un archivo de componente (`src/app/components/`, `src/app/shared/components/`) exporta la clase del componente y nada más. Si necesita un tipo, una constante, un texto fijo o una función pura, ese archivo no es su sitio.
+
+## Dónde va cada cosa
+
+- Interfaces y tipos compartidos: `src/app/shared/interfaces/`. Si el tipo solo describe el copy del modelo, vive junto a ese copy en `src/app/constants/`.
+- Constantes (números, claves, límites) y copy: `src/app/constants/m02-info.ts` y `src/app/shared/constants/`. El componente las recibe o las importa; no las declara.
+- Utilidades (funciones puras, mapeos, formato): `src/app/shared/utils/`. Reglas de dominio: `src/app/shared/domain/`.
+- Rutas de API, mensajes e identidad del modelo: `src/app/shared/constants/`. No se reescriben dentro del componente.
+- No añadas código nuevo bajo `src/app/features/`.
+
+## Magic strings
+
+Un texto de UI, un tope de cupos, una ruta de API o una clave de almacenamiento salen de `MODEL_02_INFO`, `WEDDING_INFO` o el módulo de constantes que ya los define. Una clase `m02-*` no es un magic string.
+
+## Sin barrels
+
+No crees `index.ts` que reexporte la carpeta. Importa el archivo que define el símbolo:
+
+```ts
+import { M02HeroComponent } from '../hero/m02-hero.component';
+```
+
+```ts
+import { M02HeroComponent } from '../hero';
+```
+
+## Ejemplo
+
+El componente no declara el tipo, la constante ni la utilidad:
+
+```ts
+const MESSAGE = 'Hola';
+interface CardView { title: string; }
+function labelOf(title: string) { return title; }
+
+export class CardComponent {
+  readonly message = MESSAGE;
+}
+```
+
+Eso vive al lado y el componente solo lo usa:
+
+```ts
+import { MODEL_02_INFO } from '../../constants/m02-info';
+import type { CardView } from '../../shared/interfaces/card.interface';
+import { labelOf } from '../../shared/utils/label';
+
+export class CardComponent {
+  readonly message = MODEL_02_INFO.rsvp.title;
+  label(view: CardView) { return labelOf(view.title); }
+}
+```

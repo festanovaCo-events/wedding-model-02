@@ -20,11 +20,9 @@
       {{ info.rsvp.text }}
       <strong>{{ weddingInfo.confirmation.deadlineLabel | uppercase }}</strong>
     </p>
-    <button type="button" class="m02-btn m02-btn--pill" (click)="openConfirmation()">
+    <button type="button" class="m02-btn m02-btn--pill" (click)="confirmRequested.emit()">
       {{ info.rsvp.buttonText }}
     </button>
   }
 </div>
 }
-
-<app-confirmation-modal-host [show]="isConfirmationModalVisible" (close)="closeConfirmationModal()" />

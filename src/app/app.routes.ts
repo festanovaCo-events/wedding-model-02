@@ -1,8 +1,9 @@
 import { Routes } from '@angular/router';
+import { APP_ROUTE_PATHS } from './shared/constants/app-routes';
 
 export const routes: Routes = [
   {
-    path: 'expired',
+    path: APP_ROUTE_PATHS.expired,
     loadComponent: () =>
       import('./shared/pages/wedding-expired-page/wedding-expired-page.component').then(
         (m) => m.WeddingExpiredPageComponent
