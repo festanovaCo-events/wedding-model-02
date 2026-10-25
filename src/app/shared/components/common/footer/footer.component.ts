@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { SITE_CREDIT } from '../../../constants/site-credit';
 
 @Component({
   selector: 'app-footer',
@@ -8,5 +9,5 @@ import { Component } from '@angular/core';
   styleUrl: './footer.component.css'
 })
 export class FooterComponent {
-
+  readonly credit = SITE_CREDIT;
 }

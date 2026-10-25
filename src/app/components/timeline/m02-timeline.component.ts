@@ -1,15 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import {
-  ChurchIcon,
-  DrinkIcon,
-  FireworksIcon,
-  MusicNote01Icon,
-  SpoonAndForkIcon,
-  Time04Icon,
-} from '@hugeicons/core-free-icons';
-import { MODEL_02_INFO, Model02TimelineIcon } from '../../constants/m02-info';
+import { MODEL_02_INFO } from '../../constants/m02-info';
+import { MODEL_02_TIMELINE_ICONS } from '../../constants/m02-timeline-icons';
 
 @Component({
   selector: 'app-m02-timeline',
@@ -19,13 +12,5 @@ import { MODEL_02_INFO, Model02TimelineIcon } from '../../constants/m02-info';
 })
 export class M02TimelineComponent {
   readonly info = MODEL_02_INFO;
-
-  readonly timelineIcons: Record<Model02TimelineIcon, typeof ChurchIcon> = {
-    church: ChurchIcon,
-    cocktail: DrinkIcon,
-    fireworks: FireworksIcon,
-    dinner: SpoonAndForkIcon,
-    party: MusicNote01Icon,
-    clock: Time04Icon,
-  };
+  readonly timelineIcons = MODEL_02_TIMELINE_ICONS;
 }

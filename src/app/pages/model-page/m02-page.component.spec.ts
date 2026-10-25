@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { BehaviorSubject, Observable, of } from 'rxjs';
+import { APP_ROUTES } from '../../shared/constants/app-routes';
 import { WEDDING_INFO } from '../../shared/constants/wedding-info';
 import { InvitationInfoResponse, InvitationStatus } from '../../shared/interfaces/invitation.interface';
 import { INVITATION_API, InvitationApi } from '../../shared/services/invitation-api';
@@ -104,7 +105,7 @@ describe('M02PageComponent', () => {
 
     await createPage();
 
-    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/expired'], {
+    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith([APP_ROUTES.expired], {
       queryParamsHandling: 'preserve',
       replaceUrl: true,
     });

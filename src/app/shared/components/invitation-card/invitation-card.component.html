@@ -6,35 +6,20 @@
     class="w-full flex items-center justify-between px-6 py-5 hover:bg-surface-alt/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 cursor-pointer"
   >
     <div class="flex items-center gap-3">
-      <svg
-        class="w-4 h-4 text-primary"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"
-        />
-      </svg>
+      <hugeicons-icon class="text-primary" [icon]="heartIcon" [size]="16" color="currentColor" [strokeWidth]="2" />
       <span class="font-cookie text-xl text-heading">
-        Ver la invitación de todos modos
+        {{ copy.cardTitle }}
       </span>
     </div>
 
-    <svg
-      class="w-4 h-4 text-muted transition-transform"
+    <hugeicons-icon
+      class="text-muted transition-transform"
       [class.rotate-180]="isOpen"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-    </svg>
+      [icon]="chevronIcon"
+      [size]="16"
+      color="currentColor"
+      [strokeWidth]="2"
+    />
   </button>
 
   <div *ngIf="isOpen" class="border-t border-theme-border">
@@ -42,7 +27,7 @@
 
     <div class="flex items-center justify-between px-5 py-3 bg-surface-alt border-b border-accent/20">
       <p class="text-xs text-muted leading-relaxed">
-        Solo lectura — ya no estás confirmado para asistir
+        {{ copy.readOnly }}
       </p>
       <a
         *ngIf="openInNewTabUrl"
@@ -51,15 +36,8 @@
         rel="noopener noreferrer"
         class="flex items-center gap-1.5 text-xs text-primary hover:text-primary-soft hover:underline shrink-0 ml-4"
       >
-        Abrir en nueva pestaña
-        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"
-          />
-        </svg>
+        {{ copy.openTab }}
+        <hugeicons-icon [icon]="openIcon" [size]="12" color="currentColor" [strokeWidth]="2" />
       </a>
     </div>
 
@@ -67,7 +45,7 @@
       <iframe
         *ngIf="safeIframeUrl"
         [src]="safeIframeUrl"
-        title="Invitación de boda"
+        [title]="copy.iframeTitle"
         class="w-full h-full border-0"
         [class.pointer-events-none]="!iframeInteractive"
         loading="lazy"

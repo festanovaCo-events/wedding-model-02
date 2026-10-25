@@ -9,7 +9,7 @@
       aria-hidden="true" />
     <app-m02-passes />
     <app-m02-gifts />
-    <app-m02-rsvp />
+    <app-m02-rsvp (confirmRequested)="openConfirmationFromSection()" />
     <app-m02-adults-only />
   </section>
 
@@ -19,9 +19,14 @@
 <!-- Modal de guía para confirmación -->
 <app-modal [show]="showConfirmationGuide" (close)="closeGuide()">
   <div class="m02-modal">
-    <h2>¡No olvides confirmar tu asistencia!</h2>
-    <p>Tu confirmación nos ayuda a organizar todo. Solo te tomará un momento.</p>
-    <button type="button" class="m02-btn" (click)="openConfirmation()">Confírmanos tu presencia</button>
-    <button type="button" class="m02-modal__later" (click)="closeGuide()">Más tarde</button>
+    <h2>{{ guide.title }}</h2>
+    <p>{{ guide.text }}</p>
+    <button type="button" class="m02-btn" (click)="openConfirmation()">{{ guide.confirm }}</button>
+    <button type="button" class="m02-modal__later" (click)="closeGuide()">{{ guide.later }}</button>
   </div>
 </app-modal>
+
+<app-confirmation-modal-host
+  [show]="showConfirmationModal"
+  (close)="closeConfirmationModal()"
+/>

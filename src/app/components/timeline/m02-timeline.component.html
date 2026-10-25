@@ -2,7 +2,7 @@
   <div class="m02-torn-container__shadow" aria-hidden="true"></div>
   <section class="m02-timeline m02-torn-container__content">
     <div class="m02-timeline__inner">
-      <h2 class="m02-timeline__heading">ITINERARIO</h2>
+      <h2 class="m02-timeline__heading">{{ info.timelineHeading }}</h2>
       <div class="m02-timeline__list">
         <span class="m02-timeline__dot m02-timeline__dot--start" aria-hidden="true"></span>
         @for (item of info.timeline; track item.label) {

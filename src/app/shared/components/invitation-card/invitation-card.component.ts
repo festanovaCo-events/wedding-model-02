@@ -1,17 +1,25 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { ArrowDown01Icon, FavouriteIcon, LinkSquare01Icon } from '@hugeicons/core-free-icons';
+import { PREVIEW_QUERY_PARAM, PREVIEW_QUERY_VALUE } from '../../constants/app-routes';
+import { EXPIRED_INVITATION_COPY } from '../../constants/expired-invitation-copy';
 
 @Component({
   selector: 'app-invitation-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HugeiconsIconComponent],
   templateUrl: './invitation-card.component.html',
   styleUrl: './invitation-card.component.css',
 })
 export class InvitationCardComponent implements OnChanges {
-  /** URL absoluta de la invitación (con token). Se abre en iframe con preview=1. */
   @Input() invitationUrl = '';
+
+  readonly copy = EXPIRED_INVITATION_COPY;
+  readonly heartIcon = FavouriteIcon;
+  readonly chevronIcon = ArrowDown01Icon;
+  readonly openIcon = LinkSquare01Icon;
 
   isOpen = false;
   /** Hasta un clic, una capa tapa el iframe para que el scroll sea de la página. */
@@ -48,11 +56,11 @@ export class InvitationCardComponent implements OnChanges {
 
     try {
       const parsed = new URL(url, window.location.origin);
-      parsed.searchParams.set('preview', '1');
+      parsed.searchParams.set(PREVIEW_QUERY_PARAM, PREVIEW_QUERY_VALUE);
       return parsed.toString();
     } catch {
       const separator = url.includes('?') ? '&' : '?';
-      return `${url}${separator}preview=1`;
+      return `${url}${separator}${PREVIEW_QUERY_PARAM}=${PREVIEW_QUERY_VALUE}`;
     }
   }
 }
