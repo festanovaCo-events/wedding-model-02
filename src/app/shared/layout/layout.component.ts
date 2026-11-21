@@ -29,6 +29,7 @@ import { ScrollLockService } from '../services/scroll-lock.service';
   standalone: true,
   selector: 'app-layout',
   templateUrl: './layout.component.html',
+  styleUrls: ['./layout.component.css'],
   imports: [
     CommonModule,
     RouterModule,

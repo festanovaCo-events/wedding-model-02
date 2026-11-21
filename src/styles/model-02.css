@@ -843,6 +843,142 @@ html:has(.m02-page) app-footer > footer {
   color: #4a5d4e
 }
 
+@media (max-width: 380px) {
+  .m02-hero__intro {
+    padding: 2.5rem 1.25rem 2.25rem;
+  }
+
+  .m02-botanical--top-right {
+    width: 130px;
+    right: -18px;
+  }
+
+  .m02-botanical--mid-left {
+    width: 92px;
+    left: -36px;
+  }
+
+  .m02-botanical--mid-right {
+    width: 86px;
+    right: -28px;
+  }
+
+  .m02-botanical--invite-right {
+    width: 118px;
+    right: -22px;
+  }
+
+  .m02-botanical--invite-left {
+    width: 110px;
+    left: -28px;
+  }
+
+  .m02-botanical--logistics-right {
+    width: 112px;
+    right: -36px;
+  }
+
+  .m02-quote {
+    letter-spacing: 0.08em;
+  }
+
+  .m02-monogram__letter {
+    font-size: 2.85rem;
+  }
+
+  .m02-monogram__subtitle {
+    letter-spacing: 0.2em;
+  }
+
+  .m02-invitation {
+    padding: 2.1rem 1.15rem 2.75rem;
+  }
+
+  .m02-we-label {
+    letter-spacing: 0.2em;
+  }
+
+  .m02-couple-names__wife,
+  .m02-couple-names__husband {
+    font-size: clamp(2.6rem, 16vw, 3.1rem);
+  }
+
+  .m02-amp {
+    font-size: 1.65rem;
+  }
+
+  .m02-date-block__month {
+    letter-spacing: 0.22em;
+  }
+
+  .m02-date-block__row {
+    gap: 0.55rem;
+  }
+
+  .m02-date-block__dow,
+  .m02-date-block__year {
+    min-width: 3.8rem;
+    letter-spacing: 0.1em;
+  }
+
+  .m02-date-block__day {
+    font-size: 2.6rem;
+  }
+
+  .m02-events {
+    padding-inline: 1.15rem;
+  }
+
+  .m02-event-card__title {
+    letter-spacing: 0.1em;
+  }
+
+  .m02-timeline__inner {
+    padding-inline: 0.85rem;
+  }
+
+  .m02-timeline__heading {
+    letter-spacing: 0.18em;
+  }
+
+  .m02-timeline__label {
+    font-size: clamp(1.25rem, 7.5vw, 1.55rem);
+  }
+
+  .m02-logistics {
+    padding: 2.4rem 1.15rem 1.75rem;
+  }
+
+  .m02-passes__label,
+  .m02-gifts__title,
+  .m02-rsvp__title {
+    letter-spacing: 0.12em;
+  }
+
+  .m02-btn,
+  .m02-btn--large,
+  .m02-btn--pill {
+    max-width: 100%;
+    min-width: 0;
+    width: min(100%, 16rem);
+    padding-inline: 1.4rem;
+    box-sizing: border-box;
+  }
+
+  .m02-botanical--footer {
+    width: 120px;
+  }
+
+  .m02-closing {
+    padding-inline: 1.15rem;
+    letter-spacing: 0.08em;
+  }
+
+  .m02-modal {
+    padding: 0.75rem;
+  }
+}
+
 @media(min-width:768px) {
   .m02-couple-names__wife,
   .m02-couple-names__husband {
